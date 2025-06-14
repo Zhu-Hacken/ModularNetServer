@@ -1,5 +1,7 @@
 #include "interceptor.h"
 #include "util/utils.h"
+#include "log/logs.h"
+
 // std::unordered_set<std::string> Interceptor::kAuthWhitelist = {
 //     "/login.html",
 //     "/register",

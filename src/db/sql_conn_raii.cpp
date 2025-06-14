@@ -1,6 +1,7 @@
 #include "sql_conn_raii.h"
 #include "util/utils.h"
 #include "db/sql_connection_pool.h"
+#include "log/logs.h"
 
 // 构造函数：从连接池中获取连接
 SqlConnRAII::SqlConnRAII(MYSQL** conn)

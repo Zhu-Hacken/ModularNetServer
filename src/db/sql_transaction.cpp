@@ -1,6 +1,7 @@
 #include "sql_transaction.h"
 #include "util/utils.h"
 #include <ostream>
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[SqlTransaction] ";
 

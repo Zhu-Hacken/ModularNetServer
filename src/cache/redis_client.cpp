@@ -1,6 +1,7 @@
 #include "redis_client.h"
 #include <iostream>
 #include "util/utils.h"
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[RedisClient] ";
 

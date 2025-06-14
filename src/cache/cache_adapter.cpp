@@ -1,5 +1,5 @@
 #include "cache_adapter.h"
-#include "util/utils.h"
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[CacheAdapter] ";
 

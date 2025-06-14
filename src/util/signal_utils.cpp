@@ -2,6 +2,7 @@
 #include "util/utils.h"
 #include <cstring>
 #include <cassert>
+#include "log/logs.h"
 
 
 const std::string BASE_TEXT = "[SignalUtils] ";

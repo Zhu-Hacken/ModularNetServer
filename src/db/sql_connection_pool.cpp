@@ -1,6 +1,7 @@
 #include "sql_connection_pool.h"
 #include "util/utils.h"
 #include <stdexcept>
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[SqlConnPool] ";
 

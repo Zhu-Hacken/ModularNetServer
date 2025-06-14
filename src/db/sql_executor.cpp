@@ -1,6 +1,7 @@
 #include "sql_executor.h"
 #include "util/utils.h"
 #include <cstring>
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[SqlExecutor] ";
 

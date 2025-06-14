@@ -9,6 +9,7 @@
 #include "session/session_manager.h"
 #include <arpa/inet.h>
 #include <sys/sendfile.h>
+#include "log/logs.h"
 
 // === 工作函数区 ===
 

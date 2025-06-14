@@ -2,6 +2,7 @@
 #include <thread>
 #include <sstream>
 #include "util/utils.h"
+#include "log/logs.h"
 
 
 int SessionManager::timer_seed = 1000000;

@@ -3,6 +3,7 @@
 #include "db/sql_executor.h"
 #include "db/sql_transaction.h"
 #include "util/utils.h"
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[TextTxDao] ";
 

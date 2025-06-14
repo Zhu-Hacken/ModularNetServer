@@ -2,6 +2,8 @@
 #include "util/utils.h"
 #include <chrono>
 #include <sstream>
+#include "log/logs.h"
+
 int TokenManager::timer_seed = 1000000;
 
 const std::string secret_key = "my_server_secret_key";

@@ -1,6 +1,8 @@
 #include "test_tx_controller.h"
 #include "mvc/dao/test_tx_dao.h"
 #include "util/utils.h"
+#include "log/logs.h"
+
 // #include ""
 
 const std::string BASE_TEXT = "[TestTxController] ";

@@ -1,7 +1,7 @@
 #include "conn/http/http_request.h"
 #include "util/utils.h"
 #include <sstream>
-
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[HttpRequest] ";
 

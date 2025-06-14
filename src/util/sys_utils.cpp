@@ -39,7 +39,7 @@ std::string SysUtils::getRootPath(){
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
     if (count != -1) {
         std::string path(result, count);
-        std::cout << std::experimental::filesystem::path(path).string() <<std::endl;
+        // std::cout << std::experimental::filesystem::path(path).string() <<std::endl;
         return std::experimental::filesystem::path(path).parent_path().parent_path().string();  // 返回项目根目录
     }
     return "./";  // 出错时默认返回当前目录

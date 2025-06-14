@@ -3,6 +3,7 @@
 #include "conn/http/http_request.h"
 #include "conn/http/http_response.h"
 #include "util/utils.h"
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[Router] ";
 

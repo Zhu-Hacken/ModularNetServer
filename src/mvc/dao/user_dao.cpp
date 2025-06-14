@@ -1,7 +1,7 @@
 #include "user_dao.h"
 #include "db/sql_conn_raii.h"
 #include "db/sql_executor.h"
-#include "util/log_utils.h"
+#include "log/log_utils.h"
 #include <mysql/mysql.h>
 
 const std::string BASE_TEXT = "[UserDao] ";

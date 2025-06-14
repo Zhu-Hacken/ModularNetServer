@@ -1,5 +1,6 @@
 #include "rate_limiter.h"
 #include "util/utils.h"
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[RateLimiter] ";
 

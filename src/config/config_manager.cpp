@@ -5,7 +5,7 @@
 #include <chrono>
 #include "third_party/nlohmann/json.hpp"
 #include "util/utils.h"
-
+#include "log/logs.h"
 
 using Json = nlohmann::json;
 

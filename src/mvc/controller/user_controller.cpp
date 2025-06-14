@@ -3,6 +3,7 @@
 #include "session/session_manager.h"
 #include "token/token_manager.h"
 #include "util/utils.h"
+#include "log/logs.h"
 
 const std::string BASE_TEXT = "[UserController] ";
 // void UserController::login(HttpConn& conn) {
