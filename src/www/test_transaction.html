@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>事务测试表单</title>
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background: #f4f4f4;
+        }
+        form {
+            background: #fff;
+            padding: 24px 32px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin-top: 12px;
+            padding: 8px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <form id="tx-form" method="post">
+        <h3>事务插入测试</h3>
+        <input type="text" name="username" id="username" placeholder="用户名" required>
+        <input type="number" name="age" id="age" placeholder="年龄" required>
+        <button type="submit">提交</button>
+    </form>
+    
+    <script>
+        document.getElementById('tx-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const age = document.getElementById('age').value;
+    
+            const body = JSON.stringify({ username, age });
+    
+            const response = await fetch('/api/tx_test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            });
+    
+            const result = await response.json();
+            alert(result.message || '请求完成');
+        });
+    </script>
+    
+    <!-- <form id="tx-form" method="post">
+        <h3>事务插入测试</h3>
+        <input type="text" name="username" id="username" placeholder="用户名" required>
+        <input type="number" name="age" id="age" placeholder="年龄" required>
+        <button type="submit">提交</button>
+    </form>
+
+    <script>
+        document.getElementById('tx-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const age = document.getElementById('age').value;
+
+            const body = `username=${encodeURIComponent(username)}&age=${encodeURIComponent(age)}`;
+
+            const response = await fetch('/api/tx_test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
+                },
+                body: body
+            });
+
+            const result = await response.json();
+            alert(result.message || '请求完成');
+        });
+    </script> -->
+</body>
+</html>

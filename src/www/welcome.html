@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎</title>
+    <style>
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            color: #0066cc; 
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #username-display {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h2>登录成功，欢迎回来！</h2>
+
+    <a href="/index.html">返回首页</a>
+
+    <button onclick="sendToken()">测试带Token请求</button>
+
+    <div id="username-display"></div>
+    <div id="json-display"></div> <!-- 新增显示JSON返回内容 -->
+    <script>
+        function sendToken() {
+            const token = localStorage.getItem('token'); // 从 localStorage 获取 Token
+
+            if (!token) {
+                alert("未找到Token，请先登录！");
+                return;
+            }
+
+            fetch('/checktoken', {
+                method: 'GET',
+                headers: {
+                    'Authorization': token
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // 非200，比如401，返回未认证提示
+                    if (response.status === 401) {
+                        alert("未认证，请重新登录！");
+                        return Promise.reject("未认证");
+                    } else {
+                        alert("请求失败，状态码：" + response.status);
+                        return Promise.reject("请求失败");
+                    }
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('服务器返回：', data);
+                document.getElementById('json-display').innerText = "服务器返回原文：" + JSON.stringify(data, null, 2); // <<< 新增：显示原始JSON内容
+
+                if (data.code === 0 && data.data && data.data.username) {
+                    document.getElementById('username-display').innerText = "欢迎您，" + data.data.username + "！";
+                } else {
+                    alert("Token无效或已过期，请重新登录！");
+                }
+            })
+            .catch(error => {
+                console.error('请求失败：', error);
+            });
+        }
+    </script>
+</body>
+</html>
