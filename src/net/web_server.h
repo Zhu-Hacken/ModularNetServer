@@ -67,7 +67,7 @@ private:
     // 创建 socket，绑定端口，listen，设置 socket 选项
     void initSocket();      
     // 初始化数据库连接池
-    void initConnPool(std::string& db_username, std::string& db_password, std::string& db_name, int db_port = 3306);
+    // void initSqlConnPool(std::string& db_username, std::string& db_password, std::string& db_name, int db_port = 3306);
     // 初始化epoll实例
     void initEpoll();
     // 处理连接事件
@@ -94,12 +94,10 @@ private:
     inline Router& getRouter() {
         return GlobalRouter::getInstance();
     }
-    // 注册控制器
-    void registerController(); 
     // 初始化连接对象工厂
-    void initConnFactory();
+    // void initConnFactory();
     // 初始化热更新配置管理器
-    void initConfigManager();
+    // void initConfigManager();
     // === 主循环 ===
     void eventLoop();
 };

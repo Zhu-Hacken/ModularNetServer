@@ -7,6 +7,8 @@
 #include <signal.h>
 #include "db/sql_connection_pool.h"
 #include "conn/conn_factory_manager.h"
+#include "log/logs.h"
+
 // std::set<int> to_be_closed;  // WebServer 的成员变量
 
 const std::string BASE_TEXT = "[WebServer] ";
@@ -40,19 +42,13 @@ void WebServer::init(std::string& db_username,
                      int db_port) 
 {
     initSignalHandlers();
-    initConnPool(db_username, db_password, db_name);
+    // initSqlConnPool(db_username, db_password, db_name);
     initSocket();
     initEpoll();
 
-    
-
-    // === 频率限制器 === 
-    RateLimiter::getInstance().init(m_config.rate_limiter_close);
-    if ( !RateLimiter::getInstance().isLimiterClose()) RateLimiterConfig::registerAllRateLimiter();
     // BaseConn::setRouter(&m_router);
 
     // === 路由器 ===
-    RouterConfig::registerAllRoutes();
     getRouter().registerGet("/api/info", [this](HttpRequest& http_request, HttpResponse& http_response){
         Json data;
         data["http_port"] = m_http_port;
@@ -68,11 +64,9 @@ void WebServer::init(std::string& db_username,
         http_response.sendJson(200, response);
     });
 
-    // === 拦截器 ===
-    Interceptor::getInstance().init(m_config.interceptor_close);
-    if ( !Interceptor::getInstance().isInterceptorClose()) InterceptorConfig::registerAllInterceptor();
-
-    initConnFactory();
+    
+    // === 初始化对象工厂 ===
+    // initConnFactory();
 }
 
 void WebServer::initSignalHandlers() {
@@ -123,14 +117,14 @@ void WebServer::initSocket(){     // 创建 socket，绑定端口，listen，设
     BaseConn::m_trig_mode = m_trig_mode;
 }    
 
-void WebServer::initConnPool(std::string& db_username, 
-                             std::string& db_password, 
-                             std::string& db_name, 
-                             int db_port) 
-{
-    LOG_INFO(BASE_TEXT + "初始化数据库连接池，共" + std::to_string(m_config.conn_num) + "个数据库连接对象。");
-    SqlConnPool::getInstance().init("localhost", db_port, db_username, db_password, db_name, m_config.conn_num);
-}
+// void WebServer::initSqlConnPool(std::string& db_username, 
+//                              std::string& db_password, 
+//                              std::string& db_name, 
+//                              int db_port) 
+// {
+//     LOG_INFO(BASE_TEXT + "初始化数据库连接池，共" + std::to_string(m_config.conn_num) + "个数据库连接对象。");
+//     SqlConnPool::getInstance().init("localhost", db_port, db_username, db_password, db_name, m_config.conn_num);
+// }
 
 void WebServer::initEpoll() {
     // 创建epoll实例
@@ -152,29 +146,25 @@ void WebServer::initEpoll() {
 }
 
 
-void WebServer::registerController() {
+// void WebServer::initConnFactory() {
+//     ConnFactoryManager::getInstance().registerFactory(m_config.http_port, []() {
+//         return std::make_shared<HttpConn>();
+//     });
+//     ConnFactoryManager::getInstance().registerFactory(m_config.test_port, []() {
+//         return std::make_shared<HttpConn>();
+//     });
+// }
 
-}
+// void WebServer::initConfigManager() {
+//     ConfigManager::getInstace().init(!m_config.config_manager_close);
 
-void WebServer::initConnFactory() {
-    ConnFactoryManager::getInstance().registerFactory(m_config.http_port, []() {
-        return std::make_shared<HttpConn>();
-    });
-    ConnFactoryManager::getInstance().registerFactory(m_config.test_port, []() {
-        return std::make_shared<HttpConn>();
-    });
-}
+//     // ConfigManager::getInstace().registerCallback([](){});
 
-void WebServer::initConfigManager() {
-    ConfigManager::getInstace().init(!m_config.config_manager_close);
+//     if( m_config.config_manager_close) {
+//         ConfigManager::getInstace().loadFromFile(ConfigManager::getInstace().getPath());
+//     }
 
-    // ConfigManager::getInstace().registerCallback([](){});
-
-    if( m_config.config_manager_close) {
-        ConfigManager::getInstace().loadFromFile(ConfigManager::getInstace().getPath());
-    }
-
-}
+// }
 
 void WebServer::run() {
     LOG_INFO(BASE_TEXT + "WebServer::run() 启动");
