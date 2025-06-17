@@ -24,6 +24,14 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/third_party
 )
 
+# 递归包含所有 src 子目录
+file(GLOB_RECURSE HEADER_DIRS LIST_DIRECTORIES true ${PROJECT_SOURCE_DIR}/src/*)
+foreach(header_dir ${HEADER_DIRS})
+    if(IS_DIRECTORY ${header_dir})
+        include_directories(${header_dir})
+    endif()
+endforeach()
+
 # 源码文件（排除 main.cpp 和测试代码）
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 list(FILTER SOURCES EXCLUDE REGEX "src/test/.*")
