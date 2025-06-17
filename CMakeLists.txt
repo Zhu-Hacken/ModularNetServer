@@ -32,10 +32,10 @@ list(FILTER SOURCES EXCLUDE REGEX "src/main.cpp")
 # 构建为静态库
 add_library(ModularNetServer STATIC ${SOURCES})
 target_link_libraries(ModularNetServer stdc++fs mysqlclient ssl crypto hiredis)
-
-add_executable(ModularNetServer src/main.cpp ${SOURCES})
 message(STATUS "Sources: ${SOURCES}")
+
+# add_executable(ModularNetServer src/main.cpp ${SOURCES})
 # message(STATUS "optional: -fstandalone-debug")
 
-add_executable(test_cache src/test/test_cache.cpp ${SOURCES})
-target_link_libraries(test_cache stdc++fs mysqlclient ssl crypto hiredis pthread )
+# add_executable(test_cache src/test/test_cache.cpp ${SOURCES})
+# target_link_libraries(test_cache stdc++fs mysqlclient ssl crypto hiredis pthread )
