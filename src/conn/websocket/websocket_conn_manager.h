@@ -15,6 +15,8 @@ public:
     void removeFd(int fd);
     // 检查 session 是否有效
     bool isSessionAlive(const SessionId& sessionId);
+    // 根据 fd 返回 sessionId
+    SessionId getSessionIdByFd(const int fd);
 
 private:
     std::mutex  m_mutex;

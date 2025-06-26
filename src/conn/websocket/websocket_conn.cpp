@@ -5,6 +5,7 @@
 #include "session/session_manager.h"
 #include "websocket_conn_manager.h"
 #include <regex>
+#include "global_router.h"
 
 WebSocketConn::WebSocketConn() : m_status(WSStatus::HANDSHAKE) {}
 
@@ -138,6 +139,7 @@ bool WebSocketConn::process() {
     if (m_status == WSStatus::HANDSHAKE) {
         if (!handleHandshake()) return false;
         const SessionId sessionId = extractSessionIdFromRequest(m_read_buf);
+        m_path = extractPathFromRequest(m_read_buf);
         if ( !sessionId.empty()) {
             WebsocketConnManager::getInstance().bindSession(m_sockfd, sessionId);
             LOG_INFO(WS_BASE_TEXT + "绑定 sessionId: " + sessionId + " 到 fd = " + std::to_string(m_sockfd));
@@ -157,6 +159,9 @@ bool WebSocketConn::process() {
         }
 
         LOG_INFO(WS_BASE_TEXT + "收到客户端消息：" + msg);
+
+        SessionId sessionId = WebsocketConnManager::getInstance().getSessionIdByFd(m_sockfd);
+        GlobalRouter::getInstance().dispatch(m_path, *this, sessionId, msg);
 
         // 简单回声
         std::string reply = "你说的是：" + msg;
@@ -354,4 +359,13 @@ std::string WebSocketConn::extractSessionIdFromRequest(const std::string& reques
         return match[1].str();
     }
     return "";
+}
+
+std::string WebSocketConn::extractPathFromRequest(const std::string& request) {
+    std::smatch match;
+    std::regex path_regex(R"(GET\s+(/[^ ?]*)\s+HTTP)");
+    if (std::regex_search(request, match, path_regex)) {
+        return match[1].str();
+    }
+    return "/";
 }

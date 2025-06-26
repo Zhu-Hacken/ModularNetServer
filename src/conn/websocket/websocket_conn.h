@@ -44,6 +44,8 @@ public:
 private:
     WSStatus m_status;
     
+    std::string m_path;
+
     std::string m_read_buf;
     std::string m_write_buf;
     
@@ -56,4 +58,6 @@ private:
 
     // 握手后从请求中提取sessionId
     std::string extractSessionIdFromRequest(const std::string& request);
+    // 握手后从请求中提取陆军
+    std::string extractPathFromRequest(const std::string& request);
 };

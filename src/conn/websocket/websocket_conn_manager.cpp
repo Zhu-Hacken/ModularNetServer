@@ -46,3 +46,9 @@ void WebsocketConnManager::removeFd(int fd) {
 bool WebsocketConnManager::isSessionAlive(const SessionId& sessionId) {
     return SessionManager::getInstance().isSessionIdValid(sessionId);
 }
+
+SessionId WebsocketConnManager::getSessionIdByFd(const int fd) {
+    auto it = m_fd_to_session.find(fd);
+    if ( it == m_fd_to_session.end()) return nullptr;
+    return it->second;
+}
