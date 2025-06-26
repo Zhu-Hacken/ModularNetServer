@@ -49,6 +49,6 @@ bool WebsocketConnManager::isSessionAlive(const SessionId& sessionId) {
 
 SessionId WebsocketConnManager::getSessionIdByFd(const int fd) {
     auto it = m_fd_to_session.find(fd);
-    if ( it == m_fd_to_session.end()) return nullptr;
+    if ( it == m_fd_to_session.end()) return "";
     return it->second;
 }
