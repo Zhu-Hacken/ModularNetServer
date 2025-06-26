@@ -79,6 +79,7 @@ void Router::registerWebSocket(const std::string& path, WebSocketHandler handler
 }
 
 void Router::dispatch(const std::string& path, WebSocketConn& conn, SessionId& sessionId, const std::string& msg) {
+    LOG_INFO(BASE_TEXT + "当前 path = " + path);
     auto it = m_ws_routes.find(path);
     if (it != m_ws_routes.end()) {
         it->second(conn, sessionId, msg);
