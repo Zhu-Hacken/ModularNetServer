@@ -1,4 +1,3 @@
-#include "router.h"
 #include "conn/http/http_conn.h"
 #include "conn/http/http_request.h"
 #include "conn/http/http_response.h"
@@ -72,4 +71,17 @@ void Router::dispatch(const std::string& method, const std::string& path, HttpRe
 
     // 未找到路由，发送404页面
     http_response.sendText(404, "Not Found", "The requested URL was not found on this server.");
+}
+
+void Router::registerWebSocket(const std::string& path, WebSocketHandler handler) {
+    LOG_INFO(BASE_TEXT + "WebSocket 注册路径：" + path);
+    m_ws_routes[path] = handler;
+}
+
+void Router::dispatch(const std::string& path, WebSocketConn& conn, SessionId& sessionId, const std::string& msg) {
+    auto it = m_ws_routes.find(path);
+    if (it != m_ws_routes.end()) {
+        it->second(conn, sessionId, msg);
+        return;
+    }
 }

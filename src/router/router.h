@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include "session/session_manager.h"
 
-// 路由处理函数类型：函数接受HttpConn的引用
+
 class HttpConn;
 class HttpRequest;
 class HttpResponse;
@@ -34,4 +34,5 @@ private:
     // 路径 -> 回调函数 映射表
     std::unordered_map<std::string, HttpHandler>     m_get_routes;
     std::unordered_map<std::string, HttpHandler>     m_post_routes;
+    std::unordered_map<std::string, WebSocketHandler> m_ws_routes;
 };
