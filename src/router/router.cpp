@@ -8,13 +8,13 @@
 const std::string BASE_TEXT = "[Router] ";
 
 // 注册Get请求处理函数
-void Router::registerGet(const std::string& path, RouteHandler handler) {
+void Router::registerGet(const std::string& path, HttpHandler handler) {
     LOG_INFO(BASE_TEXT + "get注册路径: " + path);
     m_get_routes[path] = handler;
 }
 
 // 注册 POST 请求处理函数
-void Router::registerPost(const std::string& path, RouteHandler handler) {
+void Router::registerPost(const std::string& path, HttpHandler handler) {
     LOG_INFO(BASE_TEXT + "post注册路径: " + path);
     m_post_routes[path] = handler;
 }
