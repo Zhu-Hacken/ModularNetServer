@@ -16,7 +16,8 @@ NetServer 类：负责管理监听 socket，事件循环，连接处理等服务
 class NetServer
 {
 public:
-    NetServer(const ServerConfig& config);
+    static NetServer& getInstance();
+
     ~NetServer();
 
     // 删除拷贝构造函数
@@ -24,13 +25,18 @@ public:
     NetServer& operator=(const NetServer&) = delete;
     
     // 初始化服务器
-    void init(std::string& db_username, std::string& db_password, std::string& db_name, int db_port = 3306);
+    void init(ServerConfig config, std::string& db_username, std::string& db_password, std::string& db_name, int db_port = 3306);
     // 启用服务器
     void run();           
     // 优雅关闭服务器
     void shutdown();
 
+    // 获取连接对象
+    std::shared_ptr<BaseConn> getConn(int fd);
+
 private:
+    NetServer();
+    // NetServer(const ServerConfig& config);
     static const int MAX_EVENTS = 10000;
 
     // 配置&状态
@@ -58,7 +64,8 @@ private:
     std::unordered_map<int, sockaddr_in> m_listenFdToAddr;  // fd -> Addr 映射
     // === 核心模块 ===
     TimerManager m_timer_manager;   // 定时器
-    ThreadPool m_thread_pool;       // 线程池
+    // ThreadPool m_thread_pool;       // 线程池
+    std::unique_ptr<ThreadPool> m_thread_pool;       // 线程池
     bool m_close_log;       // 日志
 
     // === 核心事件 ===

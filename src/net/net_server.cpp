@@ -13,22 +13,35 @@
 
 const std::string BASE_TEXT = "[NetServer] ";
 
-NetServer::NetServer(const ServerConfig& config)
-  : m_is_running(true),
-    m_http_port(config.http_port), 
-    m_trig_mode(config.trig_mode), 
-    // m_listen_fd(-1) ,
-    m_actor_model(config.actor_model), 
-    m_thread_pool(config.thread_num),
-    m_close_log(config.log_close)
-{
-    
-    // Log::getInstance().init(Log::INFO, "server_log", !config.close_log);
-    // Log::getInstance().setLogEnabled(!config.close_log);
+NetServer& NetServer::getInstance() {
+    static NetServer instance;
+    return instance;
+}
 
-    LOG_INFO(BASE_TEXT + "NetServer created, http port = " + std::to_string(m_http_port));
+NetServer::NetServer()
+  : m_is_running(true)
+{
+    LOG_INFO(BASE_TEXT + "NetServer created.");
     // std::cout << BASE_TEXT + "NetServer created, port = " << m_port << std::endl;
 }
+
+// NetServer::NetServer(const ServerConfig& config)
+//   : m_is_running(true),
+//     m_http_port(config.http_port), 
+//     m_trig_mode(config.trig_mode), 
+//     // m_listen_fd(-1) ,
+//     m_actor_model(config.actor_model), 
+//     m_thread_pool(config.thread_num),
+//     m_close_log(config.log_close)
+// {
+    
+//     // Log::getInstance().init(Log::INFO, "server_log", !config.close_log);
+//     // Log::getInstance().setLogEnabled(!config.close_log);
+
+//     LOG_INFO(BASE_TEXT + "NetServer created, http port = " + std::to_string(m_http_port));
+//     // std::cout << BASE_TEXT + "NetServer created, port = " << m_port << std::endl;
+// }
+
 NetServer::~NetServer(){
     if (!m_shutdown_called) {
          LOG_WARN(BASE_TEXT + "~NetServer() 自动调用 shutdown()");
@@ -36,11 +49,20 @@ NetServer::~NetServer(){
     }
 }
 
-void NetServer::init(std::string& db_username, 
+void NetServer::init(ServerConfig config,
+                     std::string& db_username, 
                      std::string& db_password, 
                      std::string& db_name, 
                      int db_port) 
 {
+
+    m_http_port = config.http_port;
+    m_trig_mode = config.trig_mode; 
+    // m_listen_fd(-1) ,
+    m_actor_model = config.actor_model; 
+    m_thread_pool = std::unique_ptr<ThreadPool>(new ThreadPool(config.thread_num));
+    m_close_log = config.log_close;
+
     initSignalHandlers();
     // initSqlConnPool(db_username, db_password, db_name);
     initSocket();
@@ -75,7 +97,7 @@ void NetServer::initSignalHandlers() {
 
 void NetServer::initSocket(){     // 创建 socket，绑定端口，listen，设置 socket 选项
     LOG_INFO(BASE_TEXT + "initSocket() called");
-    std::vector<int> ports = {m_config.http_port, m_config.test_port};
+    std::vector<int> ports = {m_config.http_port, m_config.test_port, m_config.websocket_port};
 
     for (auto port : ports) {
 
@@ -244,7 +266,7 @@ void NetServer::shutdown() {
     // 销毁数据库连接池
     SqlConnPool::getInstance().shutdown();
     // 关闭线程池
-    m_thread_pool.shutdown();
+    m_thread_pool->shutdown();
     // 关闭日志
     Log::getInstance().shutdown();
 
@@ -334,7 +356,7 @@ void NetServer::handleReadEvent(int fd)
     }
     if(m_actor_model) {    // Reactor
         // 交给线程池异步处理
-        m_thread_pool.addTask([this, conn, fd]() {
+        m_thread_pool->addTask([this, conn, fd]() {
             int n = conn->read();
             if(n > 0){
                 bool success = conn->process();
@@ -360,7 +382,7 @@ void NetServer::handleReadEvent(int fd)
         // 主线程负责 read，子线程负责业务处理
         int n = conn->read();
         if (n > 0) {
-            m_thread_pool.addTask([this, conn, fd]() {
+            m_thread_pool->addTask([this, conn, fd]() {
                 bool success = conn->process();
                 if(!success) {
                     LOG_INFO(BASE_TEXT + "Proactor数据未读完整，modFd.");
@@ -396,7 +418,7 @@ void NetServer::handleWriteEvent(int fd)
         conn = it->second;
     }
     if (m_actor_model) {    // Reactor
-        m_thread_pool.addTask([this, conn, fd](){
+        m_thread_pool->addTask([this, conn, fd](){
             // if(conn->write()){
             if(conn->write() == WriteStatus::OK){
                 if(conn->getKeepAlive()){ // 保持连接
@@ -534,4 +556,12 @@ void NetServer::removeFd(int fd)
         LOG_ERROR(BASE_TEXT + "Error: removeFd failed: fd = " + std::to_string(fd));
         return;
     }
+}
+
+
+std::shared_ptr<BaseConn> NetServer::getConn(int fd) {
+    std::lock_guard<std::mutex> lock(m_users_mtx);
+    auto it = m_users.find(fd);
+    if (it == m_users.end() || it->second->isClosed()) return nullptr;
+    return it->second;
 }
