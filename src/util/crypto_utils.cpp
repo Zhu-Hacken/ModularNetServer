@@ -1,6 +1,7 @@
 #include "crypto_utils.h"
 #include <openssl/hmac.h>
 #include <openssl/evp.h>
+#include <openssl/sha.h>
 #include <sstream>
 #include <iomanip>
 
@@ -37,4 +38,10 @@ std::string CryptoUtils::base64Encode(const std::string& input) {
     std::string result(reinterpret_cast<char*>(out), out_len);
     delete[] out;
     return result;
+}
+
+std::string CryptoUtils::sha1(const std::string& input) {
+    unsigned char hash[SHA_DIGEST_LENGTH];
+    SHA1(reinterpret_cast<const unsigned char*>(input.data()), input.size(), hash);
+    return std::string(reinterpret_cast<char*>(hash), SHA_DIGEST_LENGTH);
 }
