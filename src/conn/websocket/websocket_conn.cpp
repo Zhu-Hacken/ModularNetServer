@@ -2,6 +2,9 @@
 #include "log/logs.h"
 #include <unistd.h>
 #include "util/utils.h"
+#include "session/session_manager.h"
+#include "websocket_conn_manager.h"
+#include <regex>
 
 WebSocketConn::WebSocketConn() : m_status(WSStatus::HANDSHAKE) {}
 
@@ -28,6 +31,7 @@ void WebSocketConn::closeConn() {
     if (m_sockfd != -1) {
         LOG_INFO(WS_BASE_TEXT + "WebSocketConn closed: fd = " + std::to_string(m_sockfd));
         close(m_sockfd);
+        WebsocketConnManager::getInstance().removeFd(m_sockfd);
         m_sockfd = -1;
     }
 }
@@ -133,9 +137,20 @@ bool WebSocketConn::process() {
     LOG_INFO(WS_BASE_TEXT + "Processing fd = " + std::to_string(m_sockfd) + ".");
     if (m_status == WSStatus::HANDSHAKE) {
         if (!handleHandshake()) return false;
+        const SessionId sessionId = extractSessionIdFromRequest(m_read_buf);
+        if ( !sessionId.empty()) {
+            WebsocketConnManager::getInstance().bindSession(m_sockfd, sessionId);
+            LOG_INFO(WS_BASE_TEXT + "绑定 sessionId: " + sessionId + " 到 fd = " + std::to_string(m_sockfd));
+        }
+        else {
+            LOG_WARN(WS_BASE_TEXT + "未在请求中找到 sessionId");
+        }
+        // 清空缓冲区
+        m_read_buf.clear();
     }
     else if (m_status == WSStatus::CONNECTED) {
         std::string msg;
+        
         if (!parseWebSocketFrame(msg)) {
             LOG_WARN(WS_BASE_TEXT + "parseWebSocketFrame 失败或帧不完整");
             return false;
@@ -223,7 +238,6 @@ bool WebSocketConn::handleHandshake() {
 
     m_write_buf += response;
     m_status = WSStatus::CONNECTED;
-    m_read_buf.clear();
     // LOG_INFO(WS_BASE_TEXT + "WebSocket 握手成功，发送响应头完成");
     LOG_INFO(WS_BASE_TEXT + "WebSocket 握手响应头构建完毕");
     return true;
@@ -330,4 +344,14 @@ bool WebSocketConn::parseWebSocketFrame(std::string& message) {
     m_read_buf.erase(0, pos + payload_len);
 
     return true;
+}
+
+std::string WebSocketConn::extractSessionIdFromRequest(const std::string& request) {
+    std::smatch match;
+    std::regex session_regex(R"(GET\s+/\?session_id=([^ ]+))");
+
+    if (std::regex_search(request, match, session_regex)) {
+        return match[1].str();
+    }
+    return "";
 }
