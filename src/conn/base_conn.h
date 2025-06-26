@@ -33,6 +33,8 @@ public:
     virtual bool process() = 0;
     // 设置注册写事件的回调函数
     virtual void setEpollWriteCallback(EpollWriteCallback cb) = 0;
+    // 执行注册写事件的回调
+    bool runEpollWriteCallback();
 
     // === Getter ===
     // 获取文件描述符
