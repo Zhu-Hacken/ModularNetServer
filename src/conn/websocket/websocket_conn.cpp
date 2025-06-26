@@ -348,7 +348,7 @@ bool WebSocketConn::parseWebSocketFrame(std::string& message) {
 
 std::string WebSocketConn::extractSessionIdFromRequest(const std::string& request) {
     std::smatch match;
-    std::regex session_regex(R"(GET\s+/\?session_id=([^ ]+))");
+    std::regex session_regex(R"(GET\s+/\?sessionId=([^ ]+))");
 
     if (std::regex_search(request, match, session_regex)) {
         return match[1].str();
