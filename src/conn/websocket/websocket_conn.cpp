@@ -362,6 +362,7 @@ std::string WebSocketConn::extractSessionIdFromRequest(const std::string& reques
 }
 
 std::string WebSocketConn::extractPathFromRequest(const std::string& request) {
+    LOG_DEBUG(WS_BASE_TEXT + "从 request 中解析路径：" + request);
     std::smatch match;
     std::regex path_regex(R"(GET\s+(/[^ ?]*)\s+HTTP)");
     if (std::regex_search(request, match, path_regex)) {
