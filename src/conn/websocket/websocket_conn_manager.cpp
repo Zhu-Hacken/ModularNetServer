@@ -2,7 +2,7 @@
 #include "log/logs.h"
 #include "net/net_server.h"
 #include "websocket_conn.h"
-const std::string& BASE_TEXT = "[WebsocketConnManager] ";
+const std::string BASE_TEXT = "[WebsocketConnManager] ";
 
 WebsocketConnManager& WebsocketConnManager::getInstance() {
     static WebsocketConnManager instance;
