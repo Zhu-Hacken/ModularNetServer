@@ -26,6 +26,7 @@ public:
 public:
 
     int http_port;       // http端口
+    int websocket_port;       // websocket端口
     int test_port;       // 测试端口（无意义）
     int thread_num; // 线程池数量
     int conn_num;    // 数据库连接池数量

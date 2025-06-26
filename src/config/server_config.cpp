@@ -3,6 +3,7 @@
 
 ServerConfig::ServerConfig() : 
                         http_port(9006),
+                        websocket_port(9007),
                         test_port(9999),
                         thread_num(8), 
                         conn_num(8), 
