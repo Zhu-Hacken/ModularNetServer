@@ -23,11 +23,10 @@ int main(int argc, char* argv[]){
 
 
     LOG_INFO(BASE_TEXT + "========== ModularNetServer启动 ==========");
-    NetServer server(config);
+    NetServer::getInstance().init(config, username, password, databasename);
     
 
-    server.init(username, password, databasename);
-    server.run();
+    NetServer::getInstance().run();
     std::cout << BASE_TEXT + "服务器已关闭。" << std::endl;
     return 0;
 }

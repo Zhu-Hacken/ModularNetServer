@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket 测试</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        input, button {
+            padding: 8px 12px;
+            margin: 8px;
+            font-size: 16px;
+        }
+        pre {
+            border: 1px solid #ccc;
+            padding: 12px;
+            width: 80%;
+            max-width: 600px;
+            height: 200px;
+            overflow: auto;
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h2>WebSocket 测试</h2>
+    <input id="input" placeholder="输入内容..." />
+    <button onclick="send()">发送</button>
+    <pre id="log"></pre>
+
+    <script>
+        let ws = null;
+
+        function initWebSocket() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                log("🔁 WebSocket 已连接，准备发送消息");
+                return;
+            }
+
+            ws = new WebSocket("ws://192.168.132.131:9007/?sessionId=abc123");
+
+            ws.onopen = () => {
+                log("✅ WebSocket 连接成功");
+            };
+
+            ws.onmessage = (event) => {
+                log("📨 收到消息: " + event.data);
+            };
+
+            ws.onclose = () => {
+                log("❌ WebSocket 连接关闭");
+            };
+
+            ws.onerror = (err) => {
+                log("🚫 WebSocket 错误: 无法连接服务器");
+            };
+        }
+
+        function send() {
+            const msg = document.getElementById("input").value;
+            if (!msg) {
+                log("⚠️ 请输入内容后再发送");
+                return;
+            }
+
+            initWebSocket();
+
+            // 延迟发送，确保连接已建立
+            const waitAndSend = () => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(msg);
+                    log("📤 已发送: " + msg);
+                } else {
+                    setTimeout(waitAndSend, 100);
+                }
+            };
+
+            waitAndSend();
+        }
+
+        function log(msg) {
+            document.getElementById("log").textContent += msg + "\n";
+        }
+    </script>
+</body>
+</html>

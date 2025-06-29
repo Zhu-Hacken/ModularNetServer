@@ -9,7 +9,7 @@
 
 using Json = nlohmann::json;
 
-const std::string& BASE_TEXT = "[ConfigManager] ";
+const std::string BASE_TEXT = "[ConfigManager] ";
 
 
 ConfigManager::ConfigManager() {

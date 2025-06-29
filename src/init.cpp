@@ -1,8 +1,8 @@
 #include "init.h"
 #include "log/logs.h"
 #include "db/sql_connection_pool.h"
+#include "conn/websocket/websocket_conn.h"
 #include "conn/conn_factory_manager.h"
-
 #include "mvc/controller/test_controller.h"
 #include "mvc/controller/user_controller.h"
 #include "mvc/controller/test_tx_controller.h"
@@ -67,7 +67,8 @@ void registerAllInterceptorImpl() {
     "/welcome.html",
     "/video.mp4",
     "/test_transaction.html",
-    "/api/tx_test"
+    "/api/tx_test",
+    "/ws_test.html"
     }, true);
 
      // 注册 URI 黑名单（命中即拦截）
@@ -106,6 +107,9 @@ void initConnFactory(ServerConfig config) {
     });
     ConnFactoryManager::getInstance().registerFactory(config.test_port, []() {
         return std::make_shared<HttpConn>();
+    });
+    ConnFactoryManager::getInstance().registerFactory(config.websocket_port, []() {
+        return std::make_shared<WebSocketConn>();
     });
 }
 
