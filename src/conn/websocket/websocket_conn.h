@@ -5,7 +5,7 @@
 using Json = nlohmann::json;
 
 
-class WebSocketConn : public BaseConn {
+class WebSocketConn : public BaseConn, public std::enable_shared_from_this<WebSocketConn> {
 public:    
     enum class WSStatus {
         HANDSHAKE,
