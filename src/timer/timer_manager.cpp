@@ -3,7 +3,7 @@
 #include <iostream>
 #include "log/logs.h"
 
-void TimerManager::addTimer(int id, std::function<void()> cb, int timeout_ms)
+void TimerManager::addTimer(int id, std::function<void()> cb, int timeout_ms, bool repeat)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -12,7 +12,7 @@ void TimerManager::addTimer(int id, std::function<void()> cb, int timeout_ms)
     }
 
     // 创建新的定时器（智能指针）
-    auto timer = std::make_shared<TimerNode>(id, cb, timeout_ms);
+    auto timer = std::make_shared<TimerNode>(id, cb, timeout_ms, repeat);
 
     if (!timer) {
         LOG_ERROR("[TimerManager] make_shared 创建失败！");
@@ -46,7 +46,14 @@ void TimerManager::tick()
                 // 当前fd映射到该timer，那么需要触发回调
                 LOG_INFO("[TimerManager] Try expire fd = " + std::to_string(fd) + " 有效，即将关闭");
                 timer->runCallback();   // 执行定时器动作
-                m_timer_map.erase(timer->getFd());  
+                if (timer->isRepeat()) {
+                    // 更新到期时间
+                    auto new_timer = std::make_shared<TimerNode>(fd, timer->getCallback(), timer->getInterval(), true);
+                    m_timer_map[fd] = new_timer;
+                    m_timer_heap.push(new_timer);
+                } else {
+                    m_timer_map.erase(timer->getFd());  
+                }
             } 
             else {
                 // 惰性删除，因此可能有些fd映射到新的timer，而当前timer属于废弃的旧timer，那么不触发回调

@@ -14,7 +14,7 @@ public:
     ~TimerManager() = default;
 
     // 添加/更新定时器
-    void addTimer(int id, std::function<void()> cb, int timeout_ms);
+    void addTimer(int id, std::function<void()> cb, int timeout_ms, bool repeat = false);
     
     // 检查并触发过期定时器
     void tick();
