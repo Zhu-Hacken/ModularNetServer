@@ -44,14 +44,15 @@ void TimerManager::tick()
             // 当前堆顶超时
             if (m_timer_map.count(fd) && m_timer_map[fd] == timer) {
                 // 当前fd映射到该timer，那么需要触发回调
-                LOG_INFO("[TimerManager] Try expire fd = " + std::to_string(fd) + " 有效，即将关闭");
                 timer->runCallback();   // 执行定时器动作
                 if (timer->isRepeat()) {
                     // 更新到期时间
+                    LOG_INFO("[TimerManager] Refresh fd = " + std::to_string(fd));
                     auto new_timer = std::make_shared<TimerNode>(fd, timer->getCallback(), timer->getInterval(), true);
                     m_timer_map[fd] = new_timer;
                     m_timer_heap.push(new_timer);
                 } else {
+                    LOG_INFO("[TimerManager] Try expire fd = " + std::to_string(fd) + " 有效，即将关闭");
                     m_timer_map.erase(timer->getFd());  
                 }
             } 
