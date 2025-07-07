@@ -7,9 +7,13 @@
 #include <regex>
 #include "global_router.h"
 
+const std::string WS_BASE_TEXT = "[WebSocketConn] ";
+
 WebSocketConn::WebSocketConn() : m_status(WSStatus::HANDSHAKE) {}
 
-const std::string WS_BASE_TEXT = "[WebSocketConn] ";
+WebSocketConn::~WebSocketConn() {
+    closeConn();
+}
 
 void WebSocketConn::init(int sockfd, const sockaddr_in& addr) {
     if (m_sockfd != -1 && sockfd == m_sockfd && !m_is_closed ) {

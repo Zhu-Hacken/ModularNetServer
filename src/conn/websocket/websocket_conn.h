@@ -12,9 +12,9 @@ public:
         CONNECTED
     };
     
-    public:
+public:
     WebSocketConn();
-    ~WebSocketConn() override = default;
+    ~WebSocketConn() override;
 
     // 初始化连接
     virtual void init(int sockfd = -1, const sockaddr_in& addr = sockaddr_in()) override;
