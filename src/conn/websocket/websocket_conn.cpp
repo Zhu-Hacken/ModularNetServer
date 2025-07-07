@@ -168,8 +168,8 @@ bool WebSocketConn::process() {
         GlobalRouter::getInstance().dispatch(m_path, *this, sessionId, msg);
 
         // 简单回声
-        std::string reply = "你说的是：" + msg;
-        sendTextFrame(reply);
+        // std::string reply = "你说的是：" + msg;
+        // sendTextFrame(reply);
     } else {
         LOG_ERROR(WS_BASE_TEXT + "未知状态！");
         return false;
