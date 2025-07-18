@@ -22,25 +22,8 @@ NetServer::NetServer()
   : m_is_running(true)
 {
     LOG_INFO(BASE_TEXT + "NetServer created.");
-    // std::cout << BASE_TEXT + "NetServer created, port = " << m_port << std::endl;
 }
 
-// NetServer::NetServer(const ServerConfig& config)
-//   : m_is_running(true),
-//     m_http_port(config.http_port), 
-//     m_trig_mode(config.trig_mode), 
-//     // m_listen_fd(-1) ,
-//     m_actor_model(config.actor_model), 
-//     m_thread_pool(config.thread_num),
-//     m_close_log(config.log_close)
-// {
-    
-//     // Log::getInstance().init(Log::INFO, "server_log", !config.close_log);
-//     // Log::getInstance().setLogEnabled(!config.close_log);
-
-//     LOG_INFO(BASE_TEXT + "NetServer created, http port = " + std::to_string(m_http_port));
-//     // std::cout << BASE_TEXT + "NetServer created, port = " << m_port << std::endl;
-// }
 
 NetServer::~NetServer(){
     if (!m_shutdown_called) {
@@ -68,7 +51,6 @@ void NetServer::init(ServerConfig config,
     initSocket();
     initEpoll();
 
-    // BaseConn::setRouter(&m_router);
 
     // === 路由器 ===
     getRouter().registerGet("/api/info", [this](HttpRequest& http_request, HttpResponse& http_response){
@@ -87,8 +69,6 @@ void NetServer::init(ServerConfig config,
     });
 
     
-    // === 初始化对象工厂 ===
-    // initConnFactory();
 }
 
 void NetServer::initSignalHandlers() {
@@ -139,15 +119,6 @@ void NetServer::initSocket(){     // 创建 socket，绑定端口，listen，设
     BaseConn::m_trig_mode = m_trig_mode;
 }    
 
-// void NetServer::initSqlConnPool(std::string& db_username, 
-//                              std::string& db_password, 
-//                              std::string& db_name, 
-//                              int db_port) 
-// {
-//     LOG_INFO(BASE_TEXT + "初始化数据库连接池，共" + std::to_string(m_config.conn_num) + "个数据库连接对象。");
-//     SqlConnPool::getInstance().init("localhost", db_port, db_username, db_password, db_name, m_config.conn_num);
-// }
-
 void NetServer::initEpoll() {
     // 创建epoll实例
     m_epoll_fd = epoll_create1(0);
@@ -167,26 +138,6 @@ void NetServer::initEpoll() {
     LOG_INFO(BASE_TEXT + "epoll 初始化完成，epoll_fd = " + std::to_string(m_epoll_fd));
 }
 
-
-// void NetServer::initConnFactory() {
-//     ConnFactoryManager::getInstance().registerFactory(m_config.http_port, []() {
-//         return std::make_shared<HttpConn>();
-//     });
-//     ConnFactoryManager::getInstance().registerFactory(m_config.test_port, []() {
-//         return std::make_shared<HttpConn>();
-//     });
-// }
-
-// void NetServer::initConfigManager() {
-//     ConfigManager::getInstace().init(!m_config.config_manager_close);
-
-//     // ConfigManager::getInstace().registerCallback([](){});
-
-//     if( m_config.config_manager_close) {
-//         ConfigManager::getInstace().loadFromFile(ConfigManager::getInstace().getPath());
-//     }
-
-// }
 
 void NetServer::run() {
     LOG_INFO(BASE_TEXT + "NetServer::run() 启动");

@@ -96,6 +96,12 @@ bool HttpRequest::parseRequestLine(const std::string& line) {
 }
 
 bool HttpRequest::parseHeaders(const std::string& line) {
+    /*
+        Content-Type: application/json
+        Content-Length: 102
+        Connection: keep-alive
+        Range: bytes=100-300
+    */
     if (line == "\r\n" || line == "") {
         // 空行表示headers结束
         return false;   // 通知状态机：header解析结束
@@ -149,6 +155,21 @@ bool HttpRequest::parseHeaders(const std::string& line) {
 }
 
 bool HttpRequest::parseBody(char* read_buf, int content_length) {
+    /*
+        表单格式：
+            POST /login HTTP/1.1
+            Content-Type: application/x-www-form-urlencoded
+            Content-Length: 29
+
+            username=admin&password=123456
+
+        Json格式：
+            POST /api/chat HTTP/1.1
+            Content-Type: application/json
+            Content-Length: 38
+
+            {"prompt": "你好", "history": []}
+    */
     std::string body = std::string(read_buf, content_length);
     m_http_base->setBody(body);
 
@@ -196,9 +217,7 @@ void HttpRequest::parseAuthContext() {
     SessionId sessionId = getRequestCookie("session_id");
     if (SessionManager::getInstance().isSessionIdValid(sessionId)) {
         if (!SessionManager::getInstance().isSessionIdExpired(sessionId)) {
-            // std::string username = SessionManager::getInstance().get(const SessionId &id, const std::string &key)
-            // sessionId有效
-            // m_http_base->setUsername()
+            
         }
     }
 

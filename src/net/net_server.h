@@ -101,10 +101,6 @@ private:
     inline Router& getRouter() {
         return GlobalRouter::getInstance();
     }
-    // 初始化连接对象工厂
-    // void initConnFactory();
-    // 初始化热更新配置管理器
-    // void initConfigManager();
     // === 主循环 ===
     void eventLoop();
 };

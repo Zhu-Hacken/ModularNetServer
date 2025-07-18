@@ -94,19 +94,7 @@ void HttpResponse::sendText(int status_code, const std::string& title, const std
 
     int header_len = buildResponseHeader(status_code, title, "text/html", html.size());
 
-    // 写入发送缓冲区
-    // if (header_len + html.size() >= WRITE_BUFFER_SIZE) {
-    //     LOG_ERROR(getBaseText() + "sendText 响应体过大，超过缓冲区大小");
-    //     return;
-    // }
-
-    
     m_response_data += html;
-    // memcpy(m_write_buf + header_len, html.c_str(), html.size());
-    // m_write_idx += html.size();
-    
-    // 修改状态，确保触发写事件
-    // m_response_built = true;
 }
 
 void HttpResponse::sendJson(int status_code, const std::string& json_str) {
@@ -114,15 +102,8 @@ void HttpResponse::sendJson(int status_code, const std::string& json_str) {
     m_response_data.clear();
     buildResponseHeader(status_code, "OK", "application/json", json_str.size());
 
-    // if (json_str.size() + m_write_idx >= WRITE_BUFFER_SIZE) {
-    //     LOG_ERROR(getBaseText() + "sendJson响应体过大，超过缓冲区大小。");
-    //     return;
-    // }
-
     m_response_data += json_str;
 
-    // memcpy(m_write_buf + m_write_idx, json_str.c_str(), json_str.size())    ;
-    // m_write_idx += json_str.size();
 }
 
 void HttpResponse::sendJson(int status_code, const Json& data) {
@@ -143,37 +124,21 @@ int HttpResponse::buildResponseHeader(int status_code, const std::string& status
                                   const std::string& content_type, int content_length,
                                   const std::unordered_map<std::string, std::string>& extra_headers) 
 {
-    // m_write_idx = 0;
     m_response_data.clear();
     // 状态行
-    // m_write_idx += snprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx, 
-    //                         "HTTP/1.1 %d %s\r\n", status_code, status_text.c_str());
     m_response_data += "HTTP/1.1 " + std::to_string(status_code) + " " + status_text + "\r\n";
     // 头部字段
     m_response_data += "Content-Type: " + content_type + "\r\n";
     m_response_data += "Content-Length: " + std::to_string(content_length) + "\r\n";
-    // m_write_idx += snprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx, 
-    //                         "Content-Type: %s\r\n", content_type.c_str());
-
-    // m_write_idx += snprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx, 
-    //                         "Content-Length: %d\r\n", content_length);
 
     for (const auto& kv: m_response_cookies) {
-        // m_write_idx += snprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx, 
-        //                     "Set-Cookie: %s=%s; Path=/; Max-Age=1800\r\n", kv.first.c_str(), kv.second.c_str());          
         m_response_data += "Set-Cookie: " + kv.first + "=" + kv.second + "; Path=/; Max-Age=1800\r\n";
     }
 
     if (m_http_base->getKeepAlive()) {
-        // m_write_idx += snprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx, 
-        //                     "Connection: keep-alive\r\n");       
-        // m_write_idx += snprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx, 
-        //                     "Keep-Alive: timeout=5\r\n");       
         m_response_data += "Connection: keep-alive\r\n";
         m_response_data += "Keep-Alive: timeout=5\r\n";
     } else {
-        // m_write_idx += snprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx, 
-        //                     "Connection: close\r\n");       
         m_response_data += "Connection: close\r\n";                            
     }
     for (const auto& it : m_response_headers) {
@@ -183,15 +148,9 @@ int HttpResponse::buildResponseHeader(int status_code, const std::string& status
     for (const auto& it : extra_headers) {
         m_response_data += it.first + ": " + it.second + "\r\n";
     }
-    // for (std::unordered_map<std::string, std::string>::const_iterator it = extra_headers.begin(); it != extra_headers.end(); ++it ) {
-    //     m_write_idx += snprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx, 
-    //                             "%s: %s\r\n", it->first.c_str(), it->second.c_str());       
-    // }
 
     // 空行                                                 
     m_response_data += "\r\n";
-    // m_write_idx += snprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - m_write_idx, 
-    //                         "\r\n");       
     return m_response_data.size();
 }
 
