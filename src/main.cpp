@@ -23,9 +23,16 @@ int main(int argc, char* argv[]){
 
 
     LOG_INFO(BASE_TEXT + "========== ModularNetServer启动 ==========");
-    NetServer::getInstance().init(config, username, password, databasename);
-    
 
+    // 打印当前配置模式
+    std::string actor_str = (config.actor_model == ServerConfig::Proactor) ? "Proactor" : "Reactor";
+    std::string trig_str = (config.trig_mode == ServerConfig::ET) ? "ET" : "LT";
+
+    std::cout << "[ServerConfig] 当前模式："
+              << actor_str << " + " << trig_str << std::endl;
+
+
+    NetServer::getInstance().init(config, username, password, databasename);
     NetServer::getInstance().run();
     std::cout << BASE_TEXT + "服务器已关闭。" << std::endl;
     return 0;

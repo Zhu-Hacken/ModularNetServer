@@ -7,9 +7,9 @@ ServerConfig::ServerConfig() :
                         test_port(9999),
                         thread_num(8), 
                         conn_num(8), 
-                        actor_model(Reactor), 
                         trig_mode(LT), 
-                        log_close(false), 
+                        actor_model(Proactor), 
+                        log_close(true), 
                         rate_limiter_close(false),
                         interceptor_close(false),
                         config_manager_close(false)
