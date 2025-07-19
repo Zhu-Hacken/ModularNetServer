@@ -89,9 +89,14 @@ bool HttpRequest::parseRequestLine(const std::string& line) {
     m_http_base->setUrl(url);
     m_http_base->setVersion(version);
 
-    LOG_DEBUG(BASE_TEXT + "解析请求行成功：方法 = " + method
-              + "，路径 = " + url
-              + "，协议 = " + version);
+    // LOG_DEBUG(BASE_TEXT + "解析请求行成功：方法 = " + method
+    //           + "，路径 = " + url
+    //           + "，协议 = " + version);
+    LOG_DEBUGF("%s解析请求行成功：方法 = %s，路径 = %s，协议 = %s",
+           BASE_TEXT.c_str(),
+           method.c_str(),
+           url.c_str(),
+           version.c_str());
     return true;
 }
 
@@ -149,7 +154,12 @@ bool HttpRequest::parseHeaders(const std::string& line) {
         m_http_base->parseRange();
     }
 
-    LOG_DEBUG(BASE_TEXT + "Header解析成功：" + key + " = " + value);
+    // LOG_DEBUG(BASE_TEXT + "Header解析成功：" + key + " = " + value);
+    LOG_DEBUGF("%sHeader解析成功：%s = %s",
+           BASE_TEXT.c_str(),
+           key.c_str(),
+           value.c_str());
+
 
     return true;
 }
@@ -176,10 +186,10 @@ bool HttpRequest::parseBody(char* read_buf, int content_length) {
     std::string contentType = m_http_base->getHeader("Content-Type");
     if (contentType.find("application/x-www-form-urlencoded") != std::string::npos) {
         parseFormData();
-        LOG_INFO(BASE_TEXT + "parseFormData()");
+        LOG_INFOF("%sparseFormData()", BASE_TEXT.c_str());
     } else if (contentType.find("application/json") != std::string::npos) {
         parseJsonBody();
-        LOG_INFO(BASE_TEXT + "parseJsonBody()");
+        LOG_INFOF( "%sparseJsonBody()", BASE_TEXT.c_str());
     } else {
 
     }
@@ -213,7 +223,7 @@ void HttpRequest::parseJsonBody() {
 }
 
 void HttpRequest::parseAuthContext() {
-    LOG_INFO("[HttpRequest] 解析用户身份...");
+    LOG_INFOF("%s", "[HttpRequest] 解析用户身份...");
     SessionId sessionId = getRequestCookie("session_id");
     if (SessionManager::getInstance().isSessionIdValid(sessionId)) {
         if (!SessionManager::getInstance().isSessionIdExpired(sessionId)) {
@@ -226,7 +236,7 @@ void HttpRequest::parseAuthContext() {
         if (!TokenManager::getInstance().isTokenExpired(token)) {
             std::string username = TokenManager::getInstance().getUsername(token);
             m_http_base->setUsername(username);
-            LOG_INFO("[HttpRequest] 已解析用户身份: " + getUsername());
+            LOG_INFOF("%s已解析用户身份: %s", "[HttpRequest] ", getUsername().c_str());
         }
     }
     LOG_INFO("[HttpRequest] 解析用户身份完毕。");

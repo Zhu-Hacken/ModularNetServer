@@ -117,6 +117,7 @@ void NetServer::initSocket(){     // 创建 socket，绑定端口，listen，设
 
     // 设置连接对象触发模式
     BaseConn::m_trig_mode = m_trig_mode;
+    BaseConn::m_actor_model = m_actor_model;
 }    
 
 void NetServer::initEpoll() {
@@ -150,12 +151,12 @@ void NetServer::eventLoop(){           // 启用服务器
     epoll_event events[MAX_EVENTS];
     while(m_is_running) {
         // 等待事件到达
-        LOG_INFO(BASE_TEXT + "Eopll waiting.");
+        LOG_INFOF("%sEopll waiting.", BASE_TEXT.c_str());
         int event_count  = epoll_wait(m_epoll_fd, events, MAX_EVENTS, -1);
         if(event_count  < 0 && errno != EINTR){
             LOG_ERROR(BASE_TEXT + "Error: epoll_wait failed");
         }
-        LOG_INFO(BASE_TEXT + "Eopll event_count  = " + std::to_string(event_count ));
+        LOG_INFOF("%sEopll event_count  = %d" , BASE_TEXT.c_str(), event_count );
         
         // 检查过期定时器
         m_timer_manager.tick();
@@ -241,7 +242,7 @@ void NetServer::handleNewConnection(int listen_fd)
         return;
     }
 
-    LOG_INFO(BASE_TEXT + "New connection accepted: fd = " + std::to_string(conn_fd));
+    LOG_INFOF("%sNew connection accepted: fd = %d", BASE_TEXT.c_str(), conn_fd);
 
     // 注册 conn_fd 到 epoll
     addFd(conn_fd, EPOLLIN);
@@ -312,7 +313,7 @@ void NetServer::handleReadEvent(int fd)
             if(n > 0){
                 bool success = conn->process();
                 if (!success) {
-                    LOG_INFO(BASE_TEXT + "Reactor数据未读完整，modFd.");
+                    LOG_INFOF("%sReactor数据未读完整，modFd.", BASE_TEXT.c_str());
                     this->modFd(fd, EPOLLIN);
                 }
                 if (!conn->isClosed()){     // 响应构建失败时会断开连接，若断开则不刷新定时器
@@ -320,7 +321,7 @@ void NetServer::handleReadEvent(int fd)
                 }
             } 
             else if(n == 0){
-                LOG_INFO(BASE_TEXT + "Reactor 客户端主动关闭连接 fd = " + std::to_string(fd));
+                LOG_INFOF( "%sReactor 客户端主动关闭连接 fd = %d" , BASE_TEXT.c_str(), fd);
                 closeConnection(fd);
             }
             else {
@@ -336,7 +337,7 @@ void NetServer::handleReadEvent(int fd)
             m_thread_pool->addTask([this, conn, fd]() {
                 bool success = conn->process();
                 if(!success) {
-                    LOG_INFO(BASE_TEXT + "Proactor数据未读完整，modFd.");
+                    LOG_INFOF( "%sProactor数据未读完整，modFd.", BASE_TEXT.c_str());
                     this->modFd(fd, EPOLLIN);
                 }
                 if (!conn->isClosed()) {
@@ -346,7 +347,7 @@ void NetServer::handleReadEvent(int fd)
         }
         else if (n == 0){
              
-            LOG_INFO(BASE_TEXT + "Proactor 客户端主动关闭连接 fd = " + std::to_string(fd));
+            LOG_INFOF( "%sProactor 客户端主动关闭连接 fd = %d", BASE_TEXT.c_str(), fd);
             closeConnection(fd);
         }
         else {
@@ -392,32 +393,35 @@ void NetServer::handleWriteEvent(int fd)
     }
     else {                  // Proactor
         // if(conn->write()){
-        if(conn->write() == WriteStatus::OK){
-            if(conn->getKeepAlive()) {    // 保持连接
-                conn->init(fd, conn->getAddr());
-                modFd(fd, EPOLLIN);
+        m_thread_pool->addTask([this, conn, fd](){
+            if(conn->write() == WriteStatus::OK){
+                if(conn->getKeepAlive()) {    // 保持连接
+                    conn->init(fd, conn->getAddr());
+                    modFd(fd, EPOLLIN);
+                    refreshTimer(fd);
+                }
+                else {
+                    closeConnection(fd);    
+                }
+            }
+            else if(conn->write() == WriteStatus::AGAIN) {
+                modFd(fd, EPOLLOUT);
                 refreshTimer(fd);
             }
             else {
-                closeConnection(fd);    
+                closeConnection(fd);
             }
-        }
-        else if(conn->write() == WriteStatus::AGAIN) {
-            modFd(fd, EPOLLOUT);
-            refreshTimer(fd);
-        }
-        else {
-            closeConnection(fd);
-        }
+        });
     }
 }
 
 void NetServer::refreshTimer(int fd)
-{   LOG_INFO(BASE_TEXT + "刷新定时器：fd = " + std::to_string(fd));
+{   
+    LOG_INFOF("%s刷新定时器：fd = %d", BASE_TEXT.c_str(), fd);
     // 设置定时器
     m_timer_manager.addTimer(fd, [fd, this](){
         this->closeConnection(fd);
-        LOG_INFO(BASE_TEXT + "超时断开连接 fd = " + std::to_string(fd));
+        LOG_INFOF("%s超时断开连接 fd = %d", BASE_TEXT.c_str(), fd);
         }, 1000000);
 }
 
@@ -443,7 +447,7 @@ void NetServer::closeConnection(int fd)
     // 通过 shared_ptr 调用 closeConn，确保自动管理连接生命周期
     conn->closeConn();
 
-    LOG_INFO(BASE_TEXT + "Connection closed: fd = " + std::to_string(fd));
+    LOG_INFOF( "%sConnection closed: fd = %d", BASE_TEXT.c_str(), fd);
     // std::cout << (BASE_TEXT + "Connection closed: fd = " + std::to_string(fd)) << std::endl;
 }
 
@@ -487,10 +491,10 @@ void NetServer::modFd(int fd, uint32_t events, bool one_shot, bool trig_mode)
     if(trig_mode) ev.events |= EPOLLET;
 
     if(events == EPOLLIN){
-        LOG_INFO(BASE_TEXT + "modFd(EPOLLIN) called: fd = " + std::to_string(fd));
+        LOG_INFOF("%smodFd(EPOLLIN) called: fd = %d", BASE_TEXT.c_str(), fd);
     }
     if(events == EPOLLOUT){
-        LOG_INFO(BASE_TEXT + "modFd(EPOLLOUT) called: fd = " + std::to_string(fd));
+        LOG_INFOF("%smodFd(EPOLLOUT) called: fd = %d", BASE_TEXT.c_str(), fd);
     }
     // std::cout << "before if (epoll_ctl(m_epoll_fd, EPOLL_CTL_MOD, fd, &ev) < 0) {" << std::endl;
     if (epoll_ctl(m_epoll_fd, EPOLL_CTL_MOD, fd, &ev) < 0) {

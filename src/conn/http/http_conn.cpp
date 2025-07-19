@@ -107,7 +107,7 @@ void HttpConn::closeConn() {
     }
 
     if (m_sockfd != -1) {
-        LOG_INFO(getBaseText() + "HttpConn closed: fd = " + std::to_string(m_sockfd));
+        LOG_INFOF("%sHttpConn closed: fd = %d", getBaseText().c_str(), m_sockfd);
         close(m_sockfd);
         m_sockfd = -1;
     }
@@ -119,7 +119,7 @@ bool HttpConn::isClosed()
 }
 
 bool HttpConn::read() {
-    LOG_INFO(getBaseText() + "进入 read()，当前触发模式 = " + (m_trig_mode == ServerConfig::ET ? "ET" : "LT"));
+    LOG_INFOF( "%s进入 read()，当前触发模式 = %s", getBaseText().c_str(), (m_trig_mode == ServerConfig::ET ? "ET" : "LT"));
     if (m_sockfd == -1) {
         LOG_ERROR(getBaseText() + "尝试对无效连接进行 read()，fd = -1");
         return false;
@@ -150,8 +150,14 @@ bool HttpConn::read() {
 
         m_read_idx += bytes_read;
 
-        LOG_DEBUG(getBaseText() + "read from fd = " + std::to_string(m_sockfd ) 
-            + ": \n" + std::string(m_read_buf, m_read_idx));
+        // LOG_DEBUG(getBaseText() + "read from fd = " + std::to_string(m_sockfd ) 
+        //     + ": \n" + std::string(m_read_buf, m_read_idx));
+        LOG_DEBUGF("%sread from fd = %d:\n%.*s", 
+           getBaseText().c_str(), 
+           m_sockfd, 
+           m_read_idx, 
+           m_read_buf);
+
         return true;
 
     }
@@ -181,16 +187,22 @@ bool HttpConn::read() {
                 break;
             }
         }
-        LOG_DEBUG(getBaseText() + "read from fd = " + std::to_string(m_sockfd ) 
-            + ": \n" + std::string(m_read_buf, m_read_idx));
+        // LOG_DEBUG(getBaseText() + "read from fd = " + std::to_string(m_sockfd ) 
+        //     + ": \n" + std::string(m_read_buf, m_read_idx));
+        LOG_DEBUGF("%sread from fd = %d:\n%.*s", 
+           getBaseText().c_str(), 
+           m_sockfd, 
+           m_read_idx, 
+           m_read_buf);
+
         return true;
 
     }
     return false;
 }
 
-WriteStatus HttpConn::write()
-{
+
+WriteStatus HttpConn::write() {
     int write_buf_total_sent = 0; // 写缓冲区中已经发送的字节数
     if ( !m_header_sent) {
         // 1. 先发送写缓冲区的内容，通常是header+Json(如果有的话)
@@ -213,7 +225,7 @@ WriteStatus HttpConn::write()
 
     // 2. 发送响应体（如果有文件需要发送的话）
     if (m_file_fd == -1) {
-        LOG_INFO(getBaseText() + "动态响应发送完成（无文件）");
+        LOG_INFOF( "%s动态响应发送完成（无文件）", getBaseText().c_str());
         return WriteStatus::OK;
     }
 
@@ -224,16 +236,24 @@ WriteStatus HttpConn::write()
         ssize_t sent = sendfile(m_sockfd, m_file_fd, &offset, count);
         if (sent > 0) {
             m_file_bytes_sent += sent;
-            LOG_INFO(getBaseText() + "Range 请求解析结果: start = " + std::to_string(m_http_request.getRange().start) +
-            ", end = " + std::to_string(m_http_request.getRange().end) +
-            ", file_offset = " + std::to_string(m_file_offset) +
-            ", response_size = " + std::to_string(m_file_response_size) +
-            ", file_total_size = " + std::to_string(m_file_total_size));
+            // LOG_INFO(getBaseText() + "Range 请求解析结果: start = " + std::to_string(m_http_request.getRange().start) +
+            // ", end = " + std::to_string(m_http_request.getRange().end) +
+            // ", file_offset = " + std::to_string(m_file_offset) +
+            // ", response_size = " + std::to_string(m_file_response_size) +
+            // ", file_total_size = " + std::to_string(m_file_total_size));
+            LOG_INFOF("%sRange 请求解析结果: start = %d, end = %d, file_offset = %ld, response_size = %ld, file_total_size = %ld",
+                getBaseText().c_str(),
+                m_http_request.getRange().start,
+                m_http_request.getRange().end,
+                m_file_offset,
+                m_file_response_size,
+                m_file_total_size);
+
 
         }
         else if (errno == EAGAIN || errno == EWOULDBLOCK){
             // TODO: 错误处理
-            LOG_WARN(getBaseText() + "sendfile 缓冲区满");
+            LOG_WARNF( "%ssendfile 缓冲区满", getBaseText().c_str());
             return WriteStatus::AGAIN;
         }
         else {
@@ -242,44 +262,18 @@ WriteStatus HttpConn::write()
         }
     }
  
-    // const int BUFFER_SIZE = 8192;
-    // char buf[BUFFER_SIZE];
-
-    // while(m_file_bytes_sent < m_file_response_size) {
-    //     int to_read = std::min(BUFFER_SIZE, m_file_response_size - m_file_bytes_sent);
-    //     int n_read = ::read(m_file_fd, buf, to_read);
-    //     if (n_read <= 0) {
-    //         LOG_ERROR(getBaseText() + "文件" + std::to_string(m_file_fd) + "读取失败");
-    //         CloseFile();
-    //         return false;
-    //     }
-    //     int n_sent = send(m_sockfd, buf, n_read, 0);
-    //     if(n_sent <= 0) {
-    //         if(errno == EAGAIN || errno == EWOULDBLOCK) {
-    //             lseek(m_file_fd, -n_read, SEEK_CUR);    // 回退指针，下次重读
-    //             return false;
-    //         } else if (errno == EPIPE) {
-    //             LOG_WARN("客户端已关闭连接，发送失败 EPIPE");
-    //             // 应立即关闭连接
-    //         } else {
-    //             LOG_ERROR(getBaseText() + "send响应体失败" + ", errno = " + std::to_string(errno));
-    //         }
-    //         CloseFile();
-    //         return false;
-    //     }
-
-    //     m_file_bytes_sent += n_sent;
-    // }
-
-    
-    // std::cout << m_sockfd << ": in " << "write 3" << std::endl;
     CloseFile();
-    LOG_INFO(getBaseText() + "响应发送成功，共" + std::to_string(write_buf_total_sent + m_file_bytes_sent) + "字节");
+    // LOG_INFO(getBaseText() + "响应发送成功，共" + std::to_string(write_buf_total_sent + m_file_bytes_sent) + "字节");
+    LOG_INFOF("%s响应发送成功，共%ld字节",
+          getBaseText().c_str(),
+          static_cast<long>(write_buf_total_sent + m_file_bytes_sent));
+
     return WriteStatus::OK;
 }
 
+
 bool HttpConn::process() {
-    LOG_INFO(getBaseText() + "Processing fd = " + std::to_string(m_sockfd) + ".");
+    LOG_INFOF( "%sProcessing fd = %d", getBaseText().c_str(), m_sockfd);
 
     /*
     经典HTTP报文：
@@ -367,7 +361,12 @@ bool HttpConn::generateResponse()
         LOG_ERROR(getBaseText() + "打开文件失败：" + m_file_path);
         return false;
     } else {
-        LOG_INFO(getBaseText() + "打开文件" + m_file_path + "，描述符 m_file_fd = " + std::to_string(m_file_fd));
+        // LOG_INFO(getBaseText() + "打开文件" + m_file_path + "，描述符 m_file_fd = " + std::to_string(m_file_fd));
+        LOG_INFOF("%s打开文件%s，描述符 m_file_fd = %d",
+          getBaseText().c_str(),
+          m_file_path.c_str(),
+          m_file_fd);
+
     }
 
     m_file_response_size = file_size;
@@ -455,7 +454,7 @@ void HttpConn::CloseFile() {
 bool HttpConn::parseHttpRequest() {
     while(true) {
         if(m_parse_state == PARSE_REQUEST_LINE) { 
-            LOG_DEBUG(getBaseText() + "-> 状态：解析请求行");
+            LOG_DEBUGF("%s-> 状态：解析请求行", getBaseText().c_str());
 
             char *crlf = strstr(m_read_buf, "\r\n");    // 查找请求行结束符
             if(!crlf) {
@@ -478,7 +477,7 @@ bool HttpConn::parseHttpRequest() {
             m_parse_state = PARSE_HEADERS;
         }
         else if(m_parse_state == PARSE_HEADERS) {
-            LOG_DEBUG(getBaseText() + "-> 状态：解析请求头");
+            LOG_DEBUGF("%s-> 状态：解析请求头", getBaseText().c_str());
             
             while(true) {
                 char* line_end = strstr(m_read_buf, "\r\n");
@@ -505,7 +504,7 @@ bool HttpConn::parseHttpRequest() {
             m_parse_state = PARSE_BODY;
         }
         else if(m_parse_state == PARSE_BODY) {
-            LOG_DEBUG(getBaseText() + "-> 状态：解析请求体");
+            LOG_DEBUGF("%s-> 状态：解析请求体", getBaseText().c_str());
             // TODO: parseBody();
             int content_length = m_http_request.getContentLength();
             if(m_read_idx < content_length) {
@@ -517,12 +516,12 @@ bool HttpConn::parseHttpRequest() {
             // m_body = std::string(m_read_buf, m_content_length);
             removeLine(content_length);   // 消费掉body
 
-            LOG_DEBUG(getBaseText() + "收到请求体：" + m_http_request.getBody());
+            LOG_DEBUGF("%s收到请求体：%s", getBaseText().c_str(), m_http_request.getBody().c_str());
 
             m_parse_state = PARSE_DONE;
         }
         else if(m_parse_state == PARSE_DONE) {
-            LOG_DEBUG(getBaseText() + "-> 状态：解析完成。");
+            LOG_DEBUGF("%s-> 状态：解析完成。", getBaseText().c_str());
             return true;
         }
     }
