@@ -49,7 +49,8 @@ target_link_libraries(ModularNetServer stdc++fs mysqlclient ssl crypto hiredis)
 # 显示源文件列表
 message(STATUS "Sources: ${SOURCES}")
 
-# add_executable(ModularNetServer src/main.cpp ${SOURCES})
+add_executable(ModularNetServerApp src/main.cpp)
+target_link_libraries(ModularNetServerApp ModularNetServer)
 # message(STATUS "optional: -fstandalone-debug")
 
 # add_executable(test_cache src/test/test_cache.cpp ${SOURCES})
