@@ -25,7 +25,8 @@ public:
     // 初始化日志文件
     void init( LogLevel level = INFO, const std::string& filename = "./log/server_log", bool enable_log = true);  
     // 写日志
-    void write(LogLevel level, const std::string& message);         
+    void write(LogLevel level, const std::string& message);    
+    void writef(LogLevel level, const char* fmt, ...); 
     // 刷新日志缓冲区
     void flush();                                                   
     // 设置日志开关

@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <experimental/filesystem>
 #include "util/utils.h"
+#include <cstdarg>
 
 namespace fs = std::experimental::filesystem;
 
@@ -62,6 +63,19 @@ void Log::write(LogLevel level, const std::string &message)
         m_cv.notify_one();  // 唤醒日志队列，处理队列中的日志
     }
 }
+
+void Log::writef(LogLevel level, const char* fmt, ...) {
+    if (m_close_log || level < m_level) return;
+
+    char buffer[1024];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+
+    write(level, std::string(buffer));
+}
+
 
 void Log::flush()
 {
