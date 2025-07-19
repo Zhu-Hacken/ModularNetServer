@@ -12,7 +12,7 @@ const std::string BASE_TEXT = "[Init] ";
 
 // === 初始化热更新 ===
 void initConfigManager() {
-    ConfigManager::getInstace().init(true);
+    ConfigManager::getInstace().init(false);
     LOG_INFO(BASE_TEXT + ConfigManager::getInstace().get("log_close"));
 
     ConfigManager::getInstace().registerCallback("log_close", [](){

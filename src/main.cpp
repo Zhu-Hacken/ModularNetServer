@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
     initAllModules(config, username, password, databasename);
 
 
-    LOG_INFO(BASE_TEXT + "========== ModularNetServer启动 ==========");
+    LOG_INFOF("%s========== ModularNetServer启动 ==========", BASE_TEXT.c_str());
 
     // 打印当前配置模式
     std::string actor_str = (config.actor_model == ServerConfig::Proactor) ? "Proactor" : "Reactor";
