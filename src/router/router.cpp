@@ -47,7 +47,11 @@ void Router::registerPost(const std::string& path, HttpHandler handler) {
 
 // 调用处理函数（根据路径与方法分发）
 void Router::dispatch(const std::string& method, const std::string& path, HttpRequest& http_request, HttpResponse& http_response) {
-    LOG_INFO(BASE_TEXT + "当前method = " + method + "，path = " + path);
+    // LOG_INFO(BASE_TEXT + "当前method = " + method + "，path = " + path);
+    LOG_INFOF("%s当前method = %s，path = %s",
+          BASE_TEXT.c_str(),
+          method.c_str(),
+          path.c_str());
     if (method == "GET") {
         auto it = m_get_routes.find(path);
         if (it != m_get_routes.end()) {
@@ -64,7 +68,10 @@ void Router::dispatch(const std::string& method, const std::string& path, HttpRe
     }
 
     if (method == "GET") {
-        LOG_INFO(BASE_TEXT + "GET " + path + " 未注册，默认走静态页面");
+        // LOG_INFO(BASE_TEXT + "GET " + path + " 未注册，默认走静态页面");
+        LOG_INFOF("%sGET %s 未注册，默认走静态页面",
+          BASE_TEXT.c_str(),
+          path.c_str());
         http_response.setNewUrl(http_request.getUrl());
         return;
     }

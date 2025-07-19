@@ -44,6 +44,7 @@ public:
     virtual bool getKeepAlive() const = 0;
 
     static int m_trig_mode;  // 触发模式：0 = LT（水平触发），1 = ET（边沿触发）
+    static int m_actor_model;  // 触发模式：0 = Proactor，1 = Reactor
 
 protected:
     int m_sockfd;                   // 当前连接的socket文件描述符

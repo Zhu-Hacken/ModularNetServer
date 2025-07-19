@@ -19,7 +19,7 @@ void ThreadPool::addTask(const std::function<void()> &task)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_tasks.push(task); // 入队
-        LOG_DEBUG("[ThreadPool] 添加任务，当前任务数 = " + std::to_string(m_tasks.size()));
+        LOG_DEBUGF("[ThreadPool] 添加任务，当前任务数 = %d", m_tasks.size());
     }
     m_cv.notify_one();  // 通知一个等待线程
 }
@@ -48,7 +48,7 @@ void ThreadPool::worker()
 
         {   // 互斥锁作用范围
             std::unique_lock<std::mutex> lock(m_mutex);
-            LOG_DEBUG( base_text + "线程等待任务中...");
+            LOG_DEBUGF( + "%s线程等待任务中...", base_text.c_str());
             // 等待任务或退出
             m_cv.wait(lock, [this]() {
                 return m_stop || !m_tasks.empty();
@@ -56,7 +56,7 @@ void ThreadPool::worker()
 
             // 如果是退出状态，直接return
             if(m_stop && m_tasks.empty()) return;
-            LOG_DEBUG(base_text + "线程获取任务，准备执行");
+            LOG_DEBUGF( "%s线程获取任务，准备执行", base_text.c_str());
             // 拿出任务：移动构造，性能更优
             task = std::move(m_tasks.front());
             m_tasks.pop();

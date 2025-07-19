@@ -52,7 +52,11 @@ void Interceptor::registerTypeRule(const std::string& type, const std::unordered
 bool Interceptor::shouldIntercept(const std::string& type, const std::string& key) {
     // 如果拦截器已关闭，则不拦截
     if (isInterceptorClose()) {
-        LOG_INFO(BASE_TEXT + "拦截器关闭，直接放行。type = " + type + ", key = " + key); 
+        // LOG_INFO(BASE_TEXT + "拦截器关闭，直接放行。type = " + type + ", key = " + key); 
+        LOG_INFOF("%s拦截器关闭，直接放行。type = %s, key = %s",
+          BASE_TEXT.c_str(),
+          type.c_str(),
+          key.c_str());
         return false;
     }
 
