@@ -23,7 +23,7 @@ public:
     // 注册 POST 请求处理函数
     void registerPost(const std::string& path, HttpHandler handler);
     // 调用处理函数（根据路径与方法分发）
-    void dispatch(const std::string& method, const std::string& path, HttpConn& conn);
+    // void dispatch(const std::string& method, const std::string& path, HttpConn& conn);
     void dispatch(const std::string& method, const std::string& path, HttpRequest& http_request, HttpResponse& http_response);
 
     // === WebSocket 相关 ===

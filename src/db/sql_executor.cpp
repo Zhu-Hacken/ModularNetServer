@@ -116,7 +116,7 @@ bool SqlExecutor::execute() {
     }
 
     my_ulonglong rows = mysql_stmt_affected_rows(m_stmt);   // SELECT 时返回结果行数
-LOG_DEBUG(BASE_TEXT + "Server says affected_rows = "
+    LOG_DEBUG(BASE_TEXT + "Server says affected_rows = "
           + std::to_string(rows)); 
 
     LOG_DEBUG(BASE_TEXT + "SQL statement executed successfully.");
@@ -134,8 +134,8 @@ std::vector<std::map<std::string, std::string>> SqlExecutor::fetchAll() {
     }
 
     // store_result 成功后立刻打印
-my_ulonglong total = mysql_stmt_num_rows(m_stmt);
-LOG_DEBUG(BASE_TEXT + "stmt_num_rows = " + std::to_string(total));
+    my_ulonglong total = mysql_stmt_num_rows(m_stmt);
+    LOG_DEBUG(BASE_TEXT + "stmt_num_rows = " + std::to_string(total));
 
     // 获取结果集元信息（字段名等）
     MYSQL_RES* meta = mysql_stmt_result_metadata(m_stmt);

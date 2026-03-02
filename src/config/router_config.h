@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 class RouterConfig {
 public:
@@ -7,5 +8,6 @@ public:
     static void setRouteRegisterFunc(RouteRegisterFunc func);   // 函数指针注入控制器注册逻辑
     static void registerAllRoutes();
 private:
-    static RouteRegisterFunc m_register_func;
+    // static RouteRegisterFunc m_register_func;
+    static std::vector<RouteRegisterFunc> m_register_funcs;
 };

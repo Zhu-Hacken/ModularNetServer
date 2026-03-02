@@ -39,7 +39,7 @@ public:
 
 private:
     std::mutex m_mutex;
-    std::unordered_map<std::string, RequestInfo> m_ipLimitMap;
+    // std::unordered_map<std::string, RequestInfo> m_ipLimitMap;
     std::unordered_map<std::string, std::unordered_map<std::string, RequestInfo>> m_typeLimitMap; // 按类型区分的限流记录：type -> (key -> RequestInfo)
     std::unordered_map<std::string, int> m_typeTimeWindowMap;  // 每种类型对应的时间窗口（秒）
     std::unordered_map<std::string, int> m_typeMaxCountMap;  // 每种类型对应的最大请求次数阈值

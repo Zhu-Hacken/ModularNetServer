@@ -291,6 +291,11 @@ void WebSocketConn::sendTextFrame(const std::string& msg) {
 }
 
 bool WebSocketConn::parseWebSocketFrame(std::string& message) {
+    /*
+        | 0x1 | 0x2 | 0x3 | 0x4 | ... |
+        |-----|-----|-----|-----|
+        |FIN+opcode|MASK+len| 可能的扩展长度 | 4字节掩码 | payload |
+    */
     if (m_read_buf.empty()) {
         return false;
     }
