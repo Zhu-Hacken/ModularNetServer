@@ -1,6 +1,12 @@
 # ModularNetServer
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+> **语言 / Language**：本文档提供 [中文](#项目简介) 与 [English](#introduction) 两个版本。
+
 > 一个基于 C++11 的模块化、高性能网络服务器框架，支持 HTTP / WebSocket / TCP 多协议，内置线程池、定时器、路由、MVC、拦截器、限流、缓存、数据库连接池与事务、Session/Token 会话等组件。
+
+**仓库地址**：[https://github.com/Zhu-Hacken/ModularNetServer](https://github.com/Zhu-Hacken/ModularNetServer) · SSH: `git@github.com:Zhu-Hacken/ModularNetServer.git`
 
 ---
 
@@ -300,6 +306,8 @@ make -j$(nproc)
 
 > A modular, high-performance network server framework written in C++11, supporting HTTP / WebSocket / TCP multi-protocol, with built-in thread pool, timers, routing, MVC, interceptors, rate limiting, cache, database connection pool & transactions, and Session/Token management.
 
+**Repository**: [https://github.com/Zhu-Hacken/ModularNetServer](https://github.com/Zhu-Hacken/ModularNetServer) · SSH: `git@github.com:Zhu-Hacken/ModularNetServer.git`
+
 ## Table of Contents
 
 - [Introduction](#introduction)
@@ -589,3 +597,11 @@ Example:
 4. **Built-in security**: interceptor + rate limiting + prepared statements + HMAC-SHA256 token auth protect every layer from ingress to data.
 5. **Safe resource lifecycle**: connections managed by `shared_ptr`, DB connections/transactions by RAII, Session/Token auto-recycled by timers.
 6. **Config hot-reload**: JSON config changes take effect without restart, suitable for production tuning.
+
+---
+
+## 许可证 / License
+
+本项目采用 [MIT License](LICENSE) 发布。你可以在自己的项目中自由使用、修改和分发，但需保留版权声明。
+
+This project is released under the [MIT License](LICENSE). You are free to use, modify, and distribute it in your own projects, provided the copyright notice is retained.
