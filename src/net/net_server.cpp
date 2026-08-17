@@ -38,7 +38,7 @@ void NetServer::init(ServerConfig config,
                      std::string& db_name, 
                      int db_port) 
 {
-
+    m_config = config;
     m_http_port = config.http_port;
     m_trig_mode = config.trig_mode; 
     // m_listen_fd(-1) ,
